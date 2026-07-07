@@ -56,6 +56,7 @@ class _VendorRequestsScreenState extends ConsumerState<VendorRequestsScreen> {
                   DataColumn(label: Text('Phone')),
                   DataColumn(label: Text('Business')),
                   DataColumn(label: Text('Address')),
+                  DataColumn(label: Text('Documents')),
                   DataColumn(label: Text('Status')),
                   DataColumn(label: Text('Actions')),
                 ],
@@ -75,6 +76,15 @@ class _VendorRequestsScreenState extends ConsumerState<VendorRequestsScreen> {
       DataCell(Text(r.phone)),
       DataCell(Text(r.businessName)),
       DataCell(SizedBox(width: 200, child: Text(r.businessAddress, overflow: TextOverflow.ellipsis))),
+      DataCell(OutlinedButton.icon(
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          minimumSize: const Size(0, 32),
+        ),
+        icon: const Icon(Icons.folder_open, size: 16),
+        label: const Text('View', style: TextStyle(fontSize: 12)),
+        onPressed: () => _viewDocuments(r),
+      )),
       DataCell(Row(children: [
         StatusBadge(r.status),
         if (r.status == 'Rejected' && (r.rejectionReason ?? '').isNotEmpty)
@@ -99,6 +109,76 @@ class _VendorRequestsScreenState extends ConsumerState<VendorRequestsScreen> {
               _btn('Reject', AppColors.danger, () => _reject(r)),
             ])),
     ]);
+  }
+
+  void _viewDocuments(VendorRequest r) {
+    final docs = <String, String?>{
+      'Citizenship': r.citizenshipDocumentPath,
+      'NID card': r.nidDocumentPath,
+      'Business document': r.businessDocumentPath,
+    };
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Documents — ${r.ownerName}'),
+        content: SizedBox(
+          width: 460,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: docs.entries.map((e) {
+                final path = e.value;
+                final has = path != null && path.isNotEmpty;
+                final url = has
+                    ? (path.startsWith('http')
+                        ? path
+                        : '${AppConfig.baseUrl}$path')
+                    : null;
+                final isPdf = has && url!.toLowerCase().endsWith('.pdf');
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(e.key,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w700, color: AppColors.text)),
+                      const SizedBox(height: 6),
+                      if (!has)
+                        const Text('Not provided',
+                            style: TextStyle(color: AppColors.textMuted))
+                      else if (isPdf)
+                        TextButton.icon(
+                          icon: const Icon(Icons.picture_as_pdf, size: 18),
+                          label: Text(url!, overflow: TextOverflow.ellipsis),
+                          onPressed: () {},
+                        )
+                      else
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(
+                            url!,
+                            height: 200,
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) => const Padding(
+                              padding: EdgeInsets.all(16),
+                              child: Text('Could not load image.'),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Close')),
+        ],
+      ),
+    );
   }
 
   Widget _btn(String label, Color color, VoidCallback onTap) => OutlinedButton(

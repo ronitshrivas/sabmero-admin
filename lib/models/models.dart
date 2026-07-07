@@ -58,7 +58,7 @@ class AdminUser {
 class VendorRequest {
   final int id, userId;
   final String ownerName, phone, businessName, businessAddress, status;
-  final String? businessDocumentPath, rejectionReason, reviewedAt;
+  final String? businessDocumentPath, citizenshipDocumentPath, nidDocumentPath, rejectionReason, reviewedAt;
   final int? vendorId;
   final String createdAt;
 
@@ -71,6 +71,8 @@ class VendorRequest {
         businessAddress = _str(j['businessAddress']),
         status = _str(j['status']),
         businessDocumentPath = _as<String>(j['businessDocumentPath']),
+        citizenshipDocumentPath = _as<String>(j['citizenshipDocumentPath']),
+        nidDocumentPath = _as<String>(j['nidDocumentPath']),
         rejectionReason = _as<String>(j['rejectionReason']),
         reviewedAt = _as<String>(j['reviewedAt']),
         vendorId = _as<int>(j['vendorId']) ?? (j['vendorId'] is num ? (j['vendorId'] as num).toInt() : null),
