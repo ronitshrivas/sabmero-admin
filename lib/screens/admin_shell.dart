@@ -57,10 +57,18 @@ class _AdminShellState extends ConsumerState<AdminShell> {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
               child: Row(
-                children: const [
-                  Icon(Icons.shield_moon_outlined, color: Colors.white, size: 26),
-                  SizedBox(width: 10),
-                  Text('Sabmero',
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      width: 32,
+                      height: 32,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  const Text('Sabmero',
                       style: TextStyle(
                           color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700)),
                 ],

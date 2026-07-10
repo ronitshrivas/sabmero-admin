@@ -52,18 +52,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.shield_moon_outlined, color: AppColors.primary, size: 30),
-                    SizedBox(width: 10),
-                    Text('Sabmero Admin',
-                        style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.text)),
-                  ],
+                Center(
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    width: 88,
+                    height: 88,
+                    fit: BoxFit.contain,
+                  ),
                 ),
+                const SizedBox(height: 14),
+                const Text('Sabmero Admin',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.text)),
                 const SizedBox(height: 8),
                 const Text('Sign in to manage the platform',
                     textAlign: TextAlign.center,
