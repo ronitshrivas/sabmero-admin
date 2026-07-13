@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sabmero_admin/screens/payments/payment_screen.dart';
 import '../core/app_config.dart';
 import '../providers/providers.dart';
 import 'dashboard/dashboard_screen.dart';
@@ -37,13 +38,18 @@ class _AdminShellState extends ConsumerState<AdminShell> {
   static const _items = <_NavItem>[
     _NavItem('Dashboard', Icons.dashboard_outlined, DashboardScreen()),
     _NavItem('Users', Icons.people_outline, UsersScreen()),
-    _NavItem('Vendor Requests', Icons.how_to_reg_outlined, VendorRequestsScreen()),
+    _NavItem(
+      'Vendor Requests',
+      Icons.how_to_reg_outlined,
+      VendorRequestsScreen(),
+    ),
     _NavItem('Vendors', Icons.store_outlined, VendorsScreen()),
     _NavItem('Orders', Icons.receipt_long_outlined, OrdersScreen()),
     _NavItem('Bookings', Icons.build_outlined, BookingsScreen()),
     _NavItem('Categories', Icons.category_outlined, CategoriesScreen()),
     _NavItem('Promos', Icons.local_offer_outlined, PromosScreen()),
     _NavItem('Returns', Icons.assignment_return_outlined, ReturnsScreen()),
+    _NavItem('Payments', Icons.payments_outlined, PaymentsScreen()),
   ];
 
   Widget _sidebar({required bool inDrawer}) {
@@ -68,16 +74,27 @@ class _AdminShellState extends ConsumerState<AdminShell> {
                     ),
                   ),
                   const SizedBox(width: 10),
-                  const Text('Sabmero',
-                      style: TextStyle(
-                          color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700)),
+                  const Text(
+                    'Sabmero',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ],
               ),
             ),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: Text('ADMIN PANEL',
-                  style: TextStyle(color: Colors.white54, fontSize: 11, letterSpacing: 1.5)),
+              child: Text(
+                'ADMIN PANEL',
+                style: TextStyle(
+                  color: Colors.white54,
+                  fontSize: 11,
+                  letterSpacing: 1.5,
+                ),
+              ),
             ),
             const SizedBox(height: 16),
             Expanded(
@@ -87,18 +104,29 @@ class _AdminShellState extends ConsumerState<AdminShell> {
                   final item = _items[i];
                   final selected = i == _index;
                   return Material(
-                    color: selected ? Colors.white.withAlpha(28) : Colors.transparent,
+                    color: selected
+                        ? Colors.white.withAlpha(28)
+                        : Colors.transparent,
                     child: ListTile(
-                      leading: Icon(item.icon,
-                          color: selected ? Colors.white : Colors.white70, size: 20),
-                      title: Text(item.label,
-                          style: TextStyle(
-                              color: selected ? Colors.white : Colors.white70,
-                              fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                              fontSize: 14)),
+                      leading: Icon(
+                        item.icon,
+                        color: selected ? Colors.white : Colors.white70,
+                        size: 20,
+                      ),
+                      title: Text(
+                        item.label,
+                        style: TextStyle(
+                          color: selected ? Colors.white : Colors.white70,
+                          fontWeight: selected
+                              ? FontWeight.w600
+                              : FontWeight.w400,
+                          fontSize: 14,
+                        ),
+                      ),
                       onTap: () {
                         setState(() => _index = i);
-                        if (inDrawer) Navigator.pop(context); // close drawer after tap
+                        if (inDrawer)
+                          Navigator.pop(context); // close drawer after tap
                       },
                     ),
                   );
@@ -107,8 +135,15 @@ class _AdminShellState extends ConsumerState<AdminShell> {
             ),
             const Divider(color: Colors.white24, height: 1),
             ListTile(
-              leading: const Icon(Icons.logout, color: Colors.white70, size: 20),
-              title: const Text('Sign out', style: TextStyle(color: Colors.white70, fontSize: 14)),
+              leading: const Icon(
+                Icons.logout,
+                color: Colors.white70,
+                size: 20,
+              ),
+              title: const Text(
+                'Sign out',
+                style: TextStyle(color: Colors.white70, fontSize: 14),
+              ),
               onTap: () async {
                 await ref.read(authServiceProvider).logout();
                 ref.invalidate(authStateProvider);
@@ -137,10 +172,15 @@ class _AdminShellState extends ConsumerState<AdminShell> {
               ),
             ),
           Expanded(
-            child: Text(_items[_index].label,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
+            child: Text(
+              _items[_index].label,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppColors.text,
+              ),
+            ),
           ),
           const Icon(Icons.account_circle_outlined, color: AppColors.textMuted),
           const SizedBox(width: 8),
@@ -188,9 +228,7 @@ class _AdminShellState extends ConsumerState<AdminShell> {
 
         // Narrow: drawer layout.
         return Scaffold(
-          drawer: Drawer(
-            child: _sidebar(inDrawer: true),
-          ),
+          drawer: Drawer(child: _sidebar(inDrawer: true)),
           body: content,
         );
       },
