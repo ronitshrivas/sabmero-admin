@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 // Central place for anything that might change between environments.
 class AppConfig {
   // Your live backend. Change this one line to point at a different server.
-  static const String baseUrl = 'http://165.22.247.79:8080';
+  static const String baseUrl = 'https://api.sabmero.com';
   static const String apiPrefix = '/api';
 }
 
