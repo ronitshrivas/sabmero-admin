@@ -223,4 +223,103 @@ class AdminService {
     '/Payments/verify',
     body: {'type': type, 'id': bookingOrOrderId, 'approve': approved},
   );
+  // ── Vendor commission / settlement payouts ──
+  // Vendors to pay, each with their saved QR + total already paid.
+  Future<List<VendorPayoutSummary>> vendorsForPayout() async {
+    final res = await _api.get('/vendor-payments/vendors');
+    return _list(res.data).map(VendorPayoutSummary.fromJson).toList();
+  }
+
+  // Record a payment to a vendor (amount + proof screenshot path).
+  Future<ApiResult> recordVendorPayment({
+    required int vendorId,
+    required double amount,
+    String? note,
+    required String screenshotPath,
+  }) => _api.post(
+    '/vendor-payments',
+    body: {
+      'vendorId': vendorId,
+      'amount': amount,
+      if (note != null && note.isNotEmpty) 'note': note,
+      'screenshotPath': screenshotPath,
+    },
+  );
+
+  // Payment history, optionally for a single vendor.
+  Future<List<VendorPaymentRow>> vendorPaymentHistory({int? vendorId}) async {
+    final res = await _api.get(
+      '/vendor-payments/history',
+      query: {if (vendorId != null) 'vendorId': vendorId},
+    );
+    return _list(res.data).map(VendorPaymentRow.fromJson).toList();
+  }
+
+  // Upload a payment proof screenshot → server path (reuses the payment folder).
+  Future<({bool ok, String message, String? path})> uploadPaymentScreenshot(
+    List<int> bytes,
+    String filename,
+  ) => uploadQrImage(bytes, filename);
+  // ── Delivery charge settings ──
+  Future<DeliverySettings?> deliverySettings() async {
+    final res = await _api.get('/settings/delivery');
+    if (!res.ok || res.data is! Map) return null;
+    return DeliverySettings.fromJson(res.data as Map<String, dynamic>);
+  }
+
+  Future<ApiResult> setDeliverySettings(double fee, double freeAbove) =>
+      _api.put('/settings/delivery',
+          body: {'deliveryFee': fee, 'freeDeliveryAbove': freeAbove});
+  // ── Repair service catalog ──
+  Future<List<ServiceCatalogItem>> servicesCatalog() async {
+    final res = await _api.get('/services', query: {'includeInactive': true});
+    return _list(res.data).map(ServiceCatalogItem.fromJson).toList();
+  }
+
+  Future<ApiResult> createService({
+    required String name,
+    String? description,
+    required double charge,
+    String? imagePath,
+  }) =>
+      _api.post('/services', body: {
+        'name': name,
+        if (description != null) 'description': description,
+        'charge': charge,
+        if (imagePath != null) 'imagePath': imagePath,
+      });
+
+  Future<ApiResult> updateService(
+    int id, {
+    required String name,
+    String? description,
+    required double charge,
+    String? imagePath,
+    required bool isActive,
+  }) =>
+      _api.put('/services/$id', body: {
+        'name': name,
+        if (description != null) 'description': description,
+        'charge': charge,
+        if (imagePath != null) 'imagePath': imagePath,
+        'isActive': isActive,
+      });
+
+  Future<ApiResult> deleteService(int id) => _api.delete('/services/$id');
+
+  // Upload a service image → server path (product upload folder).
+  Future<({bool ok, String message, String? path})> uploadServiceImage(
+    List<int> bytes,
+    String filename,
+  ) async {
+    final res = await _api.uploadBytes('/Uploads/product', bytes, filename);
+    if (!res.ok) {
+      return (ok: false, message: res.message ?? 'Upload failed.', path: null);
+    }
+    final data = res.data;
+    final path = (data is Map) ? data['path']?.toString() : null;
+    return path == null || path.isEmpty
+        ? (ok: false, message: 'Upload succeeded but no path returned.', path: null)
+        : (ok: true, message: 'Uploaded.', path: path);
+  }
 }

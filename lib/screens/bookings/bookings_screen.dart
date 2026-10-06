@@ -84,18 +84,167 @@ class _BookingsScreenState extends ConsumerState<BookingsScreen> {
               child: const Icon(Icons.link, size: 18, color: AppColors.info))
           : const Text('—')),
       DataCell(StatusBadge(b.status)),
-      DataCell(b.status == 'Completed'
-          ? const Text('—', style: TextStyle(color: AppColors.textMuted))
-          : OutlinedButton(
+      DataCell(Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          OutlinedButton(
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              minimumSize: const Size(0, 32),
+            ),
+            onPressed: () => _details(b),
+            child: const Text('View', style: TextStyle(fontSize: 12)),
+          ),
+          const SizedBox(width: 6),
+          if (b.status != 'Completed')
+            OutlinedButton(
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 minimumSize: const Size(0, 32),
               ),
               onPressed: () => _assignTech(b),
               child: const Text('Assign tech', style: TextStyle(fontSize: 12)),
-            )),
+            ),
+        ],
+      )),
     ]);
   }
+
+  static String _fullUrl(String path) =>
+      path.startsWith('http') ? path : '${AppConfig.baseUrl}$path';
+
+  void _viewImage(String path, String title) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 520, maxHeight: 680),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AppBar(
+                title: Text(title),
+                automaticallyImplyLeading: false,
+                actions: [
+                  IconButton(onPressed: () => Navigator.pop(ctx), icon: const Icon(Icons.close)),
+                ],
+              ),
+              Flexible(
+                child: InteractiveViewer(
+                  child: Image.network(_fullUrl(path),
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => const Padding(
+                          padding: EdgeInsets.all(32), child: Text('Could not load image.'))),
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _details(BookingRow b) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Booking #${b.id} • ${b.serviceType}'),
+        content: SizedBox(
+          width: 460,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _kv('Customer', '${b.customerName}${b.customerPhone.isNotEmpty ? ' • ${b.customerPhone}' : ''}'),
+                _kv('Time slot', b.timeSlot),
+                _kv('Address', b.serviceAddress),
+                _kv('Payment', b.paymentMethod),
+                const SizedBox(height: 12),
+                const Text('Problem Description',
+                    style: TextStyle(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 4),
+                Text(
+                  (b.description == null || b.description!.trim().isEmpty)
+                      ? 'No description provided.'
+                      : b.description!,
+                  style: TextStyle(
+                      color: (b.description == null || b.description!.trim().isEmpty)
+                          ? AppColors.textMuted
+                          : AppColors.text),
+                ),
+                const SizedBox(height: 16),
+                const Text('Damage Photos',
+                    style: TextStyle(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 6),
+                if (b.damageImagePaths.isEmpty)
+                  const Text('No photos uploaded.',
+                      style: TextStyle(color: AppColors.textMuted))
+                else
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: b.damageImagePaths
+                        .map((path) => InkWell(
+                              onTap: () => _viewImage(path, 'Damage photo'),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(6),
+                                child: Image.network(
+                                  _fullUrl(path),
+                                  width: 90,
+                                  height: 90,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) =>
+                                      const Icon(Icons.broken_image, size: 36),
+                                ),
+                              ),
+                            ))
+                        .toList(),
+                  ),
+                if (b.paymentScreenshotPath != null && b.paymentScreenshotPath!.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  const Text('Payment Screenshot',
+                      style: TextStyle(fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 6),
+                  InkWell(
+                    onTap: () => _viewImage(b.paymentScreenshotPath!, 'Payment screenshot'),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: Image.network(
+                        _fullUrl(b.paymentScreenshotPath!),
+                        width: 90,
+                        height: 90,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) =>
+                            const Icon(Icons.broken_image, size: 36),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Close')),
+        ],
+      ),
+    );
+  }
+
+  Widget _kv(String k, String v) => Padding(
+        padding: const EdgeInsets.only(bottom: 4),
+        child: RichText(
+          text: TextSpan(
+            style: const TextStyle(color: AppColors.text, fontSize: 14),
+            children: [
+              TextSpan(text: '$k: ', style: const TextStyle(color: AppColors.textMuted)),
+              TextSpan(text: v),
+            ],
+          ),
+        ),
+      );
 
   Future<void> _assignTech(BookingRow b) async {
     final techs = await ref.read(techniciansProvider.future);

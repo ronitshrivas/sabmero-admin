@@ -147,6 +147,9 @@ class BookingRow {
   final String serviceType, status, timeSlot, serviceAddress, paymentMethod, createdAt;
   final String? bookingDate;
   final double? serviceCharge;
+  final String customerName, customerPhone;
+  final String? description, damageImagePath, paymentScreenshotPath;
+  final List<String> damageImagePaths;
 
   BookingRow.fromJson(Map<String, dynamic> j)
       : id = _int(j['id']),
@@ -160,7 +163,15 @@ class BookingRow {
         paymentMethod = _str(j['paymentMethod']),
         createdAt = _str(j['createdAt']),
         bookingDate = _as<String>(j['bookingDate']),
-        serviceCharge = j['serviceCharge'] == null ? null : _dbl(j['serviceCharge']);
+        serviceCharge = j['serviceCharge'] == null ? null : _dbl(j['serviceCharge']),
+        customerName = _str(j['customerName']),
+        customerPhone = _str(j['customerPhone']),
+        description = _as<String>(j['description']),
+        damageImagePath = _as<String>(j['damageImagePath']),
+        paymentScreenshotPath = _as<String>(j['paymentScreenshotPath']),
+        damageImagePaths = ((j['damageImagePaths'] as List?) ?? const [])
+            .whereType<String>()
+            .toList();
 }
 
 class CategoryRow {
@@ -200,4 +211,78 @@ class ReturnRow {
         status = _str(j['status']),
         createdAt = _str(j['createdAt']),
         adminNote = _as<String>(j['adminNote']);
+}
+
+// ── Vendor commission / settlement payouts (admin side) ──────────────────────
+// GET /api/vendor-payments/vendors → list of vendors to pay (with QR + totals).
+class VendorPayoutSummary {
+  final int vendorId;
+  final String businessName, ownerName, phone;
+  final String? paymentQrPath;
+  final double commissionRate, totalPaid;
+  final String? lastPaidAt;
+
+  VendorPayoutSummary.fromJson(Map<String, dynamic> j)
+      : vendorId = _int(j['vendorId']),
+        businessName = _str(j['businessName']),
+        ownerName = _str(j['ownerName']),
+        phone = _str(j['phone']),
+        paymentQrPath = _as<String>(j['paymentQrPath']),
+        commissionRate = _dbl(j['commissionRate']),
+        totalPaid = _dbl(j['totalPaid']),
+        lastPaidAt = _as<String>(j['lastPaidAt']);
+
+  bool get hasQr => paymentQrPath != null && paymentQrPath!.isNotEmpty;
+}
+
+// GET /api/vendor-payments/history → one recorded payment row.
+class VendorPaymentRow {
+  final int id, vendorId;
+  final String vendorName, ownerName, phone, status, createdAt;
+  final double amount;
+  final String? note, screenshotPath, acknowledgedAt;
+
+  VendorPaymentRow.fromJson(Map<String, dynamic> j)
+      : id = _int(j['id']),
+        vendorId = _int(j['vendorId']),
+        vendorName = _str(j['vendorName']),
+        ownerName = _str(j['ownerName']),
+        phone = _str(j['phone']),
+        status = (_str(j['status']).isEmpty ? 'Paid' : _str(j['status'])),
+        createdAt = _str(j['createdAt']),
+        amount = _dbl(j['amount']),
+        note = _as<String>(j['note']),
+        screenshotPath = _as<String>(j['screenshotPath']),
+        acknowledgedAt = _as<String>(j['acknowledgedAt']);
+
+  bool get isAcknowledged => status == 'Acknowledged';
+}
+
+// ── Delivery charge settings (admin-configurable) ────────────────────────────
+// GET /api/settings/delivery → { deliveryFee, freeDeliveryAbove }.
+class DeliverySettings {
+  final double deliveryFee;
+  final double freeDeliveryAbove;
+
+  DeliverySettings.fromJson(Map<String, dynamic> j)
+      : deliveryFee = _dbl(j['deliveryFee']),
+        freeDeliveryAbove = _dbl(j['freeDeliveryAbove']);
+}
+
+// ── Repair service catalog (admin-managed) ───────────────────────────────────
+class ServiceCatalogItem {
+  final int id;
+  final String name;
+  final String? description;
+  final String? imagePath;
+  final double charge;
+  final bool isActive;
+
+  ServiceCatalogItem.fromJson(Map<String, dynamic> j)
+      : id = _int(j['id']),
+        name = _str(j['name']),
+        description = _as<String>(j['description']),
+        imagePath = _as<String>(j['imagePath']),
+        charge = _dbl(j['charge']),
+        isActive = _bool(j['isActive']);
 }

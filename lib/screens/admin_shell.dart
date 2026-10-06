@@ -7,6 +7,9 @@ import 'dashboard/dashboard_screen.dart';
 import 'users/users_screen.dart';
 import 'vendors/vendor_requests_screen.dart';
 import 'vendors/vendors_screen.dart';
+import 'vendors/vendor_payouts_screen.dart';
+import 'settings/settings_screen.dart';
+import 'services/services_screen.dart';
 import 'orders/orders_screen.dart';
 import 'bookings/bookings_screen.dart';
 import 'categories/categories_screen.dart';
@@ -46,10 +49,13 @@ class _AdminShellState extends ConsumerState<AdminShell> {
     _NavItem('Vendors', Icons.store_outlined, VendorsScreen()),
     _NavItem('Orders', Icons.receipt_long_outlined, OrdersScreen()),
     _NavItem('Bookings', Icons.build_outlined, BookingsScreen()),
+    _NavItem('Services', Icons.handyman_outlined, ServicesScreen()),
     _NavItem('Categories', Icons.category_outlined, CategoriesScreen()),
     _NavItem('Promos', Icons.local_offer_outlined, PromosScreen()),
     _NavItem('Returns', Icons.assignment_return_outlined, ReturnsScreen()),
     _NavItem('Payments', Icons.payments_outlined, PaymentsScreen()),
+    _NavItem('Vendor Payouts', Icons.account_balance_wallet_outlined, VendorPayoutsScreen()),
+    _NavItem('Settings', Icons.settings_outlined, SettingsScreen()),
   ];
 
   Widget _sidebar({required bool inDrawer}) {

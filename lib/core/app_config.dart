@@ -31,6 +31,7 @@ Color statusColor(String? status) {
     case 'completed':
     case 'verified':
     case 'paid':
+    case 'acknowledged':
     case 'active':
       return AppColors.success;
     case 'pending':
